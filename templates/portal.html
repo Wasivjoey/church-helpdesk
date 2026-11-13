@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="grid cols-2" style="align-items:start">
+  <div class="hero">
+    <h1>Need a hand with tech? 🙌</h1>
+    <p>Something not working for a service, event or the office? Let the tech
+       team know here. No account needed — you'll get a reference number to
+       track it.</p>
+    <p class="mt"><a class="btn ghost" href="{{ url_for('track') }}">Track an existing request →</a></p>
+  </div>
+
+  <div class="card">
+    <h2>Submit a request</h2>
+    <form method="post" action="{{ url_for('submit_ticket') }}">
+      <label>Your name</label>
+      <input name="name" required placeholder="e.g. Sarah from Welcome Team">
+      <label>Email</label>
+      <input name="email" type="email" required placeholder="you@example.com">
+      <label>What's the problem? (summary)</label>
+      <input name="subject" required placeholder="e.g. No sound from the left speaker">
+      <div class="field-row">
+        <div>
+          <label>Category</label>
+          <select name="category">
+            {% for c in CATEGORIES %}<option>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>How urgent?</label>
+          <select name="priority">
+            {% for p in PRIORITIES %}<option {{ 'selected' if p=='Medium' }}>{{ p }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <label>Details (optional)</label>
+      <textarea name="description" placeholder="When did it start? Which room? Anything you already tried?"></textarea>
+      <div class="mt"><button class="btn" type="submit">Send request</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

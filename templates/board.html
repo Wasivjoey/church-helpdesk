@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Board · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<div class="row spread"><h1>Workflow board</h1>
+  <a class="btn ghost" href="{{ url_for('tickets') }}">List view</a></div>
+<p class="sub">Every ticket by stage. Click a card to update it.</p>
+
+<div class="board">
+  {% for s in STATUSES %}
+  <div class="col">
+    <h3><span class="badge s-{{ s|replace(' ','') }}">{{ s }}</span>
+        <span class="muted">{{ cols[s]|length }}</span></h3>
+    {% for t in cols[s] %}
+    <a class="tk" href="{{ url_for('ticket_detail', tid=t['id']) }}">
+      <div class="t">{{ t['subject'] }}</div>
+      <div class="m">{{ t['ref'] }} ·
+        <span class="badge p-{{ t['priority'] }}">{{ t['priority'] }}</span></div>
+      <div class="m">{{ t['assignee'] or 'Unassigned' }}</div>
+    </a>
+    {% else %}
+    <p class="muted small" style="padding:4px 6px">—</p>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

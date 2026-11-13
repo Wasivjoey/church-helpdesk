@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Settings · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<div class="card" style="max-width:560px;margin:0 auto">
+  <h1>Settings</h1>
+  <p class="sub">Make it yours.</p>
+  <form method="post">
+    <label>Church / organisation name</label>
+    <input name="org_name" value="{{ org_name }}" required>
+
+    <label>Colour theme</label>
+    <select name="theme">
+      {% for t in themes %}<option value="{{ t }}" {{ 'selected' if theme==t }}>{{ t|capitalize }}</option>{% endfor %}
+    </select>
+    <div class="row mt" style="gap:8px">
+      {% set swatch = {'violet':'#7c3aed','ocean':'#0ea5e9','sunrise':'#f97316','forest':'#16a34a','rose':'#e11d48'} %}
+      {% for t in themes %}
+      <span title="{{ t }}" style="width:28px;height:28px;border-radius:50%;display:inline-block;background:{{ swatch[t] }};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
+      {% endfor %}
+    </div>
+
+    <label class="mt">Change your password (optional)</label>
+    <input name="new_password" type="password" placeholder="Leave blank to keep current">
+
+    <div class="mt"><button class="btn" type="submit">Save settings</button></div>
+  </form>
+</div>
+{% endblock %}

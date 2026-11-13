@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card" style="max-width:720px;margin:0 auto">
+  <h1>Track a request</h1>
+  <p class="sub">Enter the reference number you were given (e.g. CD-1001).</p>
+  <form method="get" action="{{ url_for('track') }}" class="row">
+    <input name="ref" value="{{ ref }}" placeholder="CD-1001" style="flex:1">
+    <button class="btn" type="submit">Check status</button>
+  </form>
+
+  {% if ref and not ticket %}
+    <div class="flash error mt">No request found with reference “{{ ref }}”. Check the number and try again.</div>
+  {% endif %}
+
+  {% if ticket %}
+  <div class="mt">
+    <div class="row spread">
+      <h2 style="margin:0">{{ ticket['subject'] }}</h2>
+      <span class="badge s-{{ ticket['status']|replace(' ','') }}">{{ ticket['status'] }}</span>
+    </div>
+    <p class="muted small">Reference {{ ticket['ref'] }} · submitted {{ ticket['created_at']|dt }}</p>
+    {% if ticket['description'] %}<p>{{ ticket['description'] }}</p>{% endif %}
+    <p><span class="chip">{{ ticket['category'] }}</span> <span class="badge p-{{ ticket['priority'] }}">{{ ticket['priority'] }}</span></p>
+
+    <h2 class="mt">Updates</h2>
+    {% if comments %}
+      {% for c in comments %}
+      <div class="card" style="box-shadow:none;margin-bottom:10px">
+        <strong>{{ c['author'] }}</strong> <span class="muted small">· {{ c['created_at']|dt }}</span>
+        <p style="margin:6px 0 0">{{ c['body'] }}</p>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">No public updates yet — the team has it on their list.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

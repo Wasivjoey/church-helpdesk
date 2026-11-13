@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Assets · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<h1>Assets</h1>
+<p class="sub">Kit the tech team looks after — laptops, mics, projectors, printers.</p>
+
+<div class="grid cols-2" style="align-items:start;grid-template-columns:1.6fr 1fr">
+  <div class="card">
+    <form method="get" class="row" style="margin-bottom:14px">
+      <input name="q" value="{{ q }}" placeholder="Search tag, name or location" style="flex:1">
+      <button class="btn sm" type="submit">Search</button>
+    </form>
+    <table>
+      <tr><th>Tag</th><th>Name</th><th>Category</th><th>Status</th><th>Location</th><th></th></tr>
+      {% for a in assets %}
+      <tr>
+        <td><strong>{{ a['tag'] }}</strong></td>
+        <td>{{ a['name'] }}<br><span class="muted small">{{ a['assigned_to'] }}</span></td>
+        <td class="small">{{ a['category'] }}</td>
+        <td><span class="chip">{{ a['status'] }}</span></td>
+        <td class="small">{{ a['location'] }}</td>
+        <td class="right">
+          <button class="btn ghost sm" onclick='editInto("assetForm", {{ a|tojson }})'>Edit</button>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty">No assets yet — add one on the right.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Add / edit asset</h2>
+    <form id="assetForm" method="post" action="{{ url_for('asset_save') }}">
+      <input type="hidden" name="id">
+      <label>Tag</label><input name="tag" required placeholder="AV-030">
+      <label>Name</label><input name="name" required placeholder="Lobby TV">
+      <div class="field-row">
+        <div><label>Category</label><select name="category">{% for c in cats %}<option>{{ c }}</option>{% endfor %}</select></div>
+        <div><label>Status</label><select name="status">{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select></div>
+      </div>
+      <label>Location</label><input name="location" placeholder="Sanctuary">
+      <label>Assigned to</label><input name="assigned_to" placeholder="Ministry or person">
+      <label>Notes</label><textarea name="notes"></textarea>
+      <div class="mt row">
+        <button class="btn" type="submit">Save asset</button>
+        <button class="btn ghost" type="button" onclick="resetForm('assetForm')">Clear</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

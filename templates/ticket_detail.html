@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ t['ref'] }} · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<p class="small"><a href="{{ url_for('tickets') }}">← All tickets</a></p>
+<div class="row spread">
+  <div>
+    <h1 style="margin:0">{{ t['subject'] }}</h1>
+    <p class="muted">{{ t['ref'] }} · from {{ t['requester_name'] }}
+      &lt;{{ t['requester_email'] }}&gt; · {{ t['created_at']|dt }}</p>
+  </div>
+  <span class="badge s-{{ t['status']|replace(' ','') }}" style="font-size:.95rem">{{ t['status'] }}</span>
+</div>
+
+<div class="grid cols-2" style="align-items:start;grid-template-columns:1.6fr 1fr">
+  <div>
+    <div class="card">
+      <h2>Details</h2>
+      <p>{{ t['description'] or 'No extra details were provided.' }}</p>
+      <p><span class="chip">{{ t['category'] }}</span>
+         <span class="badge p-{{ t['priority'] }}">{{ t['priority'] }}</span>
+         {% if t['status'] in ['New','Open','In Progress','On Hold'] and t['due_at']|overdue %}
+         <span class="overdue">⚠ Overdue</span>{% endif %}</p>
+    </div>
+
+    <div class="card mt">
+      <h2>Conversation</h2>
+      {% for c in comments %}
+      <div class="card" style="box-shadow:none;margin-bottom:10px;{{ 'background:#fffbeb;border-color:#fde68a' if c['internal'] }}">
+        <strong>{{ c['author'] }}</strong>
+        <span class="muted small">· {{ c['created_at']|dt }}</span>
+        {% if c['internal'] %}<span class="chip">internal note</span>{% endif %}
+        <p style="margin:6px 0 0">{{ c['body'] }}</p>
+      </div>
+      {% else %}
+      <p class="muted">No replies yet.</p>
+      {% endfor %}
+
+      <form method="post" action="{{ url_for('ticket_comment', tid=t['id']) }}" class="mt">
+        <textarea name="body" required placeholder="Reply to the requester, or add a note…"></textarea>
+        <div class="row spread mt">
+          <label class="chip" style="display:flex;gap:6px;align-items:center;margin:0">
+            <input type="checkbox" name="internal" value="1" style="width:auto"> Internal note (hidden from requester)
+          </label>
+          <button class="btn" type="submit">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Manage</h2>
+    <form method="post" action="{{ url_for('ticket_update', tid=t['id']) }}">
+      <label>Status</label>
+      <select name="status">
+        {% for s in STATUSES %}<option {{ 'selected' if t['status']==s }}>{{ s }}</option>{% endfor %}
+      </select>
+      <label>Priority</label>
+      <select name="priority">
+        {% for p in PRIORITIES %}<option {{ 'selected' if t['priority']==p }}>{{ p }}</option>{% endfor %}
+      </select>
+      <label>Category</label>
+      <select name="category">
+        {% for c in CATEGORIES %}<option {{ 'selected' if t['category']==c }}>{{ c }}</option>{% endfor %}
+      </select>
+      <label>Assigned to</label>
+      <select name="assignee_id">
+        <option value="">— Unassigned —</option>
+        {% for a in agents %}<option value="{{ a['id'] }}" {{ 'selected' if t['assignee_id']==a['id'] }}>{{ a['name'] }}</option>{% endfor %}
+      </select>
+      <label>Linked asset</label>
+      <select name="asset_id">
+        <option value="">— None —</option>
+        {% for a in assets %}<option value="{{ a['id'] }}" {{ 'selected' if t['asset_id']==a['id'] }}>{{ a['tag'] }} · {{ a['name'] }}</option>{% endfor %}
+      </select>
+      <div class="mt"><button class="btn" type="submit" style="width:100%">Save changes</button></div>
+    </form>
+    <p class="small muted mt">SLA target: {{ t['due_at']|dt }}</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#7c3aed">
+  <title>{% block title %}{{ org_name }} Help Desk{% endblock %}</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('home') }}">
+      <span class="dot">🎧</span> {{ org_name }} <span style="opacity:.75;font-weight:600">Help&nbsp;Desk</span>
+    </a>
+    {% if current_user %}
+    <nav class="main">
+      {% set ep = request.endpoint %}
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep=='dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('tickets') }}" class="{{ 'active' if ep in ['tickets','ticket_detail','ticket_new'] }}">Tickets</a>
+      <a href="{{ url_for('board') }}" class="{{ 'active' if ep=='board' }}">Board</a>
+      <a href="{{ url_for('assets') }}" class="{{ 'active' if ep=='assets' }}">Assets</a>
+      <a href="{{ url_for('changes') }}" class="{{ 'active' if ep=='changes' }}">Changes</a>
+      {% if current_user['role']=='admin' %}
+      <a href="{{ url_for('team') }}" class="{{ 'active' if ep=='team' }}">Team</a>
+      <a href="{{ url_for('settings') }}" class="{{ 'active' if ep=='settings' }}">Settings</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}">Log out</a>
+    </nav>
+    {% else %}
+    <nav class="main">
+      <a href="{{ url_for('track') }}" class="{{ 'active' if request.endpoint=='track' }}">Track a request</a>
+      <a href="{{ url_for('login') }}" class="{{ 'active' if request.endpoint=='login' }}">Staff login</a>
+    </nav>
+    {% endif %}
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    {% block body %}{% endblock %}
+  </div>
+</main>
+<footer>{{ org_name }} Help Desk · powered by ChurchDesk · installable on any device</footer>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

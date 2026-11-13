@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}New ticket · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<div class="card" style="max-width:640px;margin:0 auto">
+  <h1>New ticket</h1>
+  <p class="sub">Logging something on behalf of a volunteer or walk-up.</p>
+  <form method="post">
+    <label>Subject</label>
+    <input name="subject" required autofocus placeholder="Short summary of the problem">
+    <div class="field-row">
+      <div><label>Requester name</label><input name="requester_name" placeholder="Who reported it"></div>
+      <div><label>Requester email</label><input name="requester_email" type="email" placeholder="optional"></div>
+    </div>
+    <div class="field-row">
+      <div><label>Category</label><select name="category">{% for c in CATEGORIES %}<option>{{ c }}</option>{% endfor %}</select></div>
+      <div><label>Priority</label><select name="priority">{% for p in PRIORITIES %}<option {{ 'selected' if p=='Medium' }}>{{ p }}</option>{% endfor %}</select></div>
+    </div>
+    <label>Details</label>
+    <textarea name="description"></textarea>
+    <div class="mt"><button class="btn" type="submit">Create ticket</button>
+      <a class="btn ghost" href="{{ url_for('tickets') }}">Cancel</a></div>
+  </form>
+</div>
+{% endblock %}

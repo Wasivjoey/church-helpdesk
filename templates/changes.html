@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Changes · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<h1>Change requests</h1>
+<p class="sub">Planned work on systems and kit — approvals, scheduling, risk.</p>
+
+<div class="grid cols-2" style="align-items:start;grid-template-columns:1.6fr 1fr">
+  <div class="card">
+    <table>
+      <tr><th>Title</th><th>Risk</th><th>Status</th><th>Scheduled</th><th></th></tr>
+      {% for ch in changes %}
+      <tr>
+        <td><strong>{{ ch['title'] }}</strong><br><span class="muted small">{{ ch['requested_by'] }}</span></td>
+        <td><span class="badge p-{{ ch['risk'] }}">{{ ch['risk'] }}</span></td>
+        <td><span class="chip">{{ ch['status'] }}</span></td>
+        <td class="small">{{ ch['scheduled_for'] or '—' }}</td>
+        <td class="right"><button class="btn ghost sm" onclick='editInto("changeForm", {{ ch|tojson }})'>Edit</button></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty">No change requests yet.</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Add / edit change</h2>
+    <form id="changeForm" method="post" action="{{ url_for('change_save') }}">
+      <input type="hidden" name="id">
+      <label>Title</label><input name="title" required placeholder="Replace foyer router">
+      <label>Description</label><textarea name="description"></textarea>
+      <div class="field-row">
+        <div><label>Risk</label><select name="risk">{% for r in risks %}<option>{{ r }}</option>{% endfor %}</select></div>
+        <div><label>Status</label><select name="status">{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select></div>
+      </div>
+      <label>Requested by</label><input name="requested_by">
+      <label>Scheduled for</label><input name="scheduled_for" type="date">
+      <div class="mt row">
+        <button class="btn" type="submit">Save change</button>
+        <button class="btn ghost" type="button" onclick="resetForm('changeForm')">Clear</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

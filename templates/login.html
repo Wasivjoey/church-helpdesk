@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="card" style="max-width:420px;margin:30px auto">
+  <h1>Staff login</h1>
+  <p class="sub">For the tech / AV team.</p>
+  {% if default_pw %}
+  <div class="flash error">First run — sign in with <strong>admin@church.local</strong> /
+    <strong>changeme</strong>, then change the password in Settings.</div>
+  {% endif %}
+  <form method="post">
+    <label>Email</label>
+    <input name="email" type="email" required autofocus>
+    <label>Password</label>
+    <input name="password" type="password" required>
+    <div class="mt"><button class="btn" type="submit" style="width:100%">Log in</button></div>
+  </form>
+  <p class="mt small"><a href="{{ url_for('home') }}">← Back to the help desk</a></p>
+</div>
+{% endblock %}

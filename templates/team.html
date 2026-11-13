@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Team · {{ org_name }} Help Desk{% endblock %}
+{% block body %}
+<h1>Team</h1>
+<p class="sub">Staff who can log in and work tickets.</p>
+
+<div class="grid cols-2" style="align-items:start;grid-template-columns:1.6fr 1fr">
+  <div class="card">
+    <table>
+      <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr>
+      {% for u in users %}
+      <tr>
+        <td><strong>{{ u['name'] }}</strong></td>
+        <td class="small">{{ u['email'] }}</td>
+        <td><span class="chip">{{ u['role'] }}</span></td>
+        <td>{% if u['is_active'] %}<span class="badge s-Resolved">active</span>
+            {% else %}<span class="badge s-Closed">inactive</span>{% endif %}</td>
+        <td class="right">
+          {% if u['id'] != current_user['id'] %}
+          <form method="post" action="{{ url_for('team_toggle', uid=u['id']) }}" style="display:inline">
+            <button class="btn ghost sm" type="submit">{{ 'Deactivate' if u['is_active'] else 'Activate' }}</button>
+          </form>
+          {% else %}<span class="muted small">you</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Add team member</h2>
+    <form method="post" action="{{ url_for('team_save') }}">
+      <label>Name</label><input name="name" required>
+      <label>Email</label><input name="email" type="email" required>
+      <label>Role</label>
+      <select name="role"><option value="agent">Agent (works tickets)</option>
+        <option value="admin">Admin (full access)</option></select>
+      <label>Temporary password</label><input name="password" placeholder="changeme">
+      <div class="mt"><button class="btn" type="submit">Add member</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
