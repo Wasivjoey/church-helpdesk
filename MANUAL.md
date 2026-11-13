@@ -17,6 +17,9 @@ There are two kinds of people who use it:
 ## 1. The public help desk (no login needed)
 
 ### 1.1 Submitting a request — the home page (`/`)
+
+![Home page — the welcome panel and the request form](screenshots/01-home.png)
+
 This is the first page anyone sees. The left panel welcomes them; the right
 panel is the request form. A requester fills in:
 
@@ -36,6 +39,9 @@ When they press **Send request**, the ticket is created and they are shown a
 it's how they track progress.
 
 ### 1.2 Tracking a request — `/track`
+
+![Track a request — enter a reference number](screenshots/02-track.png)
+
 Reached from **Track a request** in the top bar, or automatically after
 submitting. The requester types their reference number (e.g. `CD-1001`) and
 presses **Check status**. They then see:
@@ -53,6 +59,8 @@ public. If the number is wrong, a friendly "no request found" message appears.
 
 **Staff login** in the top bar opens `/login`. Enter your email and password.
 
+![Staff login page](screenshots/03-login.png)
+
 - On the very first run the app creates one admin account:
   **admin@church.local** with password **changeme**. A warning banner shows on
   the login page until that default password is changed (do it in **Settings**).
@@ -64,7 +72,11 @@ public. If the number is wrong, a friendly "no request found" message appears.
 ## 3. Dashboard (staff home)
 
 After login you land on the **Dashboard** — a quick picture of where things
-stand. It has:
+stand.
+
+![Dashboard — KPI tiles, priority and status breakdowns, recent activity](screenshots/04-dashboard.png)
+
+It has:
 
 - **Four coloured tiles**: Open tickets, Overdue (SLA), Unassigned, and Assets
   tracked. Each tile is a link that jumps to the matching list.
@@ -85,6 +97,9 @@ stages: **New → Open → In Progress → On Hold → Resolved → Closed**. Th
 four are "active"; Resolved and Closed are "done".
 
 ### 4.1 Ticket list — `/tickets`
+
+![Ticket list — search, filters and the data grid](screenshots/05-tickets.png)
+
 A searchable, filterable table of every ticket. Controls at the top:
 
 - **Search** — matches the reference, subject, or requester name.
@@ -97,11 +112,17 @@ assignee and the **due date**. A due date in red means the ticket is **overdue**
 against its SLA target. Click any row to open the ticket.
 
 ### 4.2 Workflow board — `/tickets/board`
+
+![Workflow board — one column per stage](screenshots/06-board.png)
+
 The same tickets shown as a **Kanban board**: one column per stage, each ticket
 a card. Good for a visual sweep of the team's workload. Click a card to open and
 update it. Use **List view** to switch back to the table.
 
 ### 4.3 Ticket detail — open a ticket
+
+![Ticket detail — Details, Conversation and the Manage panel](screenshots/07-ticket-detail.png)
+
 The detail page has three parts:
 
 - **Details** — the full description, category, priority, and an "⚠ Overdue"
@@ -117,6 +138,9 @@ The detail page has three parts:
   active stage clears that. Changing priority recalculates the SLA target.
 
 ### 4.4 New ticket — `/tickets/new`
+
+![New ticket — staff logging a request on someone's behalf](screenshots/08-new-ticket.png)
+
 For staff logging a request on behalf of a walk-up or phone call. Same fields as
 the public form, plus optional requester name/email. New tickets created here
 start at **Open**. After saving you go straight to the ticket.
@@ -138,6 +162,8 @@ auto-closed or auto-escalated.
 ---
 
 ## 5. Assets — `/assets`
+
+![Assets — the register list and the add/edit form](screenshots/09-assets.png)
 
 A register of the equipment the tech team looks after. The left side is the
 searchable list; the right side is one form used for both adding and editing.
@@ -162,6 +188,8 @@ tag must be unique; a duplicate is rejected with a message.
 
 ## 6. Changes — `/changes`
 
+![Changes — the change register and form](screenshots/10-changes.png)
+
 A register of planned work on systems and equipment (change management). Use it
 to record, approve and schedule changes before they happen — e.g. replacing a
 router or upgrading the WiFi.
@@ -182,6 +210,8 @@ of the list.
 
 ## 7. Team — `/team` (Admins only)
 
+![Team — staff list and add-member form](screenshots/11-team.png)
+
 Manage who can log in.
 
 - The table lists every staff member with their role and active/inactive state.
@@ -198,6 +228,8 @@ assets.
 ---
 
 ## 8. Settings — `/settings` (Admins only)
+
+![Settings — name, logo upload, theme and password](screenshots/12-settings.png)
 
 Make the app your own:
 
