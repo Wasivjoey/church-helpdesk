@@ -1,52 +1,58 @@
 {% extends "base.html" %}
 {% block title %}Dashboard · {{ org_name }} Help Desk{% endblock %}
 {% block body %}
-<div class="row spread">
-  <div><h1>Hi {{ current_user['name'].split()[0] }} 👋</h1>
-    <p class="sub">Here's where things stand today.</p></div>
-  <a class="btn" href="{{ url_for('ticket_new') }}">+ New ticket</a>
+<div class="page-head">
+  <div><h1>Service Desk overview</h1>
+    <p class="sub" style="margin:0">Welcome back, {{ current_user['name'].split()[0] }}.</p></div>
 </div>
 
 <div class="grid cols-4">
-  <a class="stat g1" href="{{ url_for('tickets', status='open') }}">
-    <div class="n">{{ open_n }}</div><div class="l">Open tickets</div></a>
-  <a class="stat g3" href="{{ url_for('tickets', status='open') }}">
-    <div class="n">{{ overdue }}</div><div class="l">Overdue (SLA)</div></a>
-  <a class="stat g2" href="{{ url_for('tickets', status='open') }}">
-    <div class="n">{{ unassigned }}</div><div class="l">Unassigned</div></a>
-  <a class="stat g4" href="{{ url_for('assets') }}">
-    <div class="n">{{ assets_n }}</div><div class="l">Assets tracked</div></a>
+  <a class="kpi c-blue" href="{{ url_for('tickets', status='open') }}">
+    <span class="mark">🎫</span><div><div class="n">{{ open_n }}</div><div class="l">Open tickets</div></div></a>
+  <a class="kpi c-red" href="{{ url_for('tickets', status='open') }}">
+    <span class="mark">⏰</span><div><div class="n">{{ overdue }}</div><div class="l">Overdue (SLA)</div></div></a>
+  <a class="kpi c-amber" href="{{ url_for('tickets', status='open') }}">
+    <span class="mark">👤</span><div><div class="n">{{ unassigned }}</div><div class="l">Unassigned</div></div></a>
+  <a class="kpi c-green" href="{{ url_for('assets') }}">
+    <span class="mark">💻</span><div><div class="n">{{ assets_n }}</div><div class="l">Assets tracked</div></div></a>
 </div>
 
 <div class="grid cols-2 mt">
   <div class="card">
-    <h2>Open by priority</h2>
+    <h2>Open tickets by priority</h2>
+    {% set pmax = (by_pri.values()|max) or 1 %}
     {% for p in PRIORITIES %}
-    <div class="row spread" style="padding:7px 0;border-bottom:1px solid var(--line)">
-      <span class="badge p-{{ p }}">{{ p }}</span>
-      <strong>{{ by_pri[p] }}</strong>
+    <div style="margin:12px 0">
+      <div class="row spread" style="margin-bottom:5px">
+        <span class="badge p-{{ p }}">{{ p }}</span><strong>{{ by_pri[p] }}</strong>
+      </div>
+      <div class="bar"><span style="width:{{ (by_pri[p]/pmax*100)|round }}%"></span></div>
     </div>
     {% endfor %}
-    <p class="mt small muted">{{ changes_open }} change request(s) in flight ·
-      {{ repair_n }} asset(s) in repair</p>
+    <p class="small muted mt">{{ changes_open }} change request(s) in flight · {{ repair_n }} asset(s) in repair</p>
   </div>
 
   <div class="card">
-    <h2>By status</h2>
-    {% for s in STATUSES %}
-    <div class="row spread" style="padding:7px 0;border-bottom:1px solid var(--line)">
-      <a href="{{ url_for('tickets', status=s) }}"><span class="badge s-{{ s|replace(' ','') }}">{{ s }}</span></a>
-      <strong>{{ counts[s] }}</strong>
-    </div>
-    {% endfor %}
+    <h2>Tickets by status</h2>
+    <table>
+      <tbody>
+      {% for s in STATUSES %}
+      <tr onclick="location='{{ url_for('tickets', status=s) }}'" style="cursor:pointer">
+        <td><span class="badge s-{{ s|replace(' ','') }}">{{ s }}</span></td>
+        <td class="right"><strong>{{ counts[s] }}</strong></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
 <div class="card mt">
-  <div class="row spread"><h2 style="margin:0">Recent activity</h2>
-    <a class="small" href="{{ url_for('tickets') }}">All tickets →</a></div>
+  <div class="row spread"><h2 style="margin:0">Recently updated</h2>
+    <a class="small" href="{{ url_for('tickets') }}">View all tickets →</a></div>
   <table class="mt">
-    <tr><th>Ref</th><th>Subject</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Updated</th></tr>
+    <thead><tr><th>Ref</th><th>Subject</th><th>Priority</th><th>Status</th><th>Assignee</th><th>Updated</th></tr></thead>
+    <tbody>
     {% for t in recent %}
     <tr onclick="location='{{ url_for('ticket_detail', tid=t['id']) }}'" style="cursor:pointer">
       <td><strong>{{ t['ref'] }}</strong></td>
@@ -59,6 +65,7 @@
     {% else %}
     <tr><td colspan="6" class="empty">No tickets yet.</td></tr>
     {% endfor %}
+    </tbody>
   </table>
 </div>
 {% endblock %}

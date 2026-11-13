@@ -198,7 +198,7 @@ def _seed(conn):
          hash_pw("changeme"), "agent", ts),
     )
     set_setting(conn, "org_name", os.environ.get("ORG_NAME", "Grace Church"))
-    set_setting(conn, "theme", "violet")
+    set_setting(conn, "theme", "ocean")
 
     assets = [
         ("AV-001", "Sanctuary Mixing Desk", "Mixer", "In Use", "Sanctuary", "AV Team"),

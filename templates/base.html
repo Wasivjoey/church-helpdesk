@@ -1,53 +1,113 @@
+{% macro icon(name) %}
+<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{%- if name=='grid' -%}<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+{%- elif name=='ticket' -%}<path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 6 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-6z"/><path d="M13 5v2M13 17v2M13 11v2"/>
+{%- elif name=='board' -%}<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/>
+{%- elif name=='box' -%}<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04M12 22V12"/>
+{%- elif name=='refresh' -%}<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+{%- elif name=='users' -%}<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+{%- elif name=='cog' -%}<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+{%- elif name=='logout' -%}<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>
+{%- elif name=='search' -%}<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+{%- endif -%}
+</svg>
+{% endmacro %}
 <!DOCTYPE html>
 <html lang="en" data-theme="{{ theme }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#7c3aed">
+  <meta name="theme-color" content="#1f3a8a">
   <title>{% block title %}{{ org_name }} Help Desk{% endblock %}</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="{{ url_for('logo') }}">
   <link rel="apple-touch-icon" href="{{ url_for('logo') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body>
-<header class="top">
+<body class="{{ 'app' if current_user else 'public' }}">
+{% if current_user %}
+{# ---- authenticated app shell: left rail + top bar (SysAid-style) ---- #}
+<aside class="rail" id="rail">
+  <a class="rail-brand" href="{{ url_for('dashboard') }}">
+    <img src="{{ url_for('logo') }}" alt="">
+    <span>{{ org_name }}</span>
+  </a>
+  {% set ep = request.endpoint %}
+  <nav class="rail-nav">
+    <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep=='dashboard' }}">
+      {{ icon('grid') }}<span>Dashboard</span></a>
+
+    <div class="rail-group">Service Desk</div>
+    <a href="{{ url_for('tickets') }}" class="{{ 'active' if ep in ['tickets','ticket_detail','ticket_new'] }}">
+      {{ icon('ticket') }}<span>Tickets</span></a>
+    <a href="{{ url_for('board') }}" class="{{ 'active' if ep=='board' }}">
+      {{ icon('board') }}<span>Workflow board</span></a>
+
+    <div class="rail-group">IT Management</div>
+    <a href="{{ url_for('assets') }}" class="{{ 'active' if ep=='assets' }}">
+      {{ icon('box') }}<span>Assets</span></a>
+    <a href="{{ url_for('changes') }}" class="{{ 'active' if ep=='changes' }}">
+      {{ icon('refresh') }}<span>Changes</span></a>
+
+    {% if current_user['role']=='admin' %}
+    <div class="rail-group">Administration</div>
+    <a href="{{ url_for('team') }}" class="{{ 'active' if ep=='team' }}">
+      {{ icon('users') }}<span>Team</span></a>
+    <a href="{{ url_for('settings') }}" class="{{ 'active' if ep=='settings' }}">
+      {{ icon('cog') }}<span>Settings</span></a>
+    {% endif %}
+  </nav>
+  <a class="rail-foot" href="{{ url_for('logout') }}">{{ icon('logout') }}<span>Log out</span></a>
+</aside>
+
+<div class="shell">
+  <header class="topbar">
+    <button class="hamburger" onclick="document.body.classList.toggle('rail-open')" aria-label="Menu">☰</button>
+    <form class="topsearch" method="get" action="{{ url_for('tickets') }}">
+      {{ icon('search') }}
+      <input name="q" placeholder="Search tickets by ref, subject or requester…">
+    </form>
+    <a class="topnew" href="{{ url_for('ticket_new') }}">+ New ticket</a>
+    <div class="topuser">
+      <span class="avatar">{{ current_user['name'][:1]|upper }}</span>
+      <span class="who"><strong>{{ current_user['name'] }}</strong><small>{{ current_user['role']|capitalize }}</small></span>
+    </div>
+  </header>
+  <main>
+    <div class="content">
+      {% with msgs = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+      {% endwith %}
+      {% block body %}{% endblock %}
+    </div>
+  </main>
+</div>
+<div class="rail-scrim" onclick="document.body.classList.remove('rail-open')"></div>
+
+{% else %}
+{# ---- public layout: slim top bar, centred content ---- #}
+<header class="pub-top">
   <div class="wrap">
     <a class="brand" href="{{ url_for('home') }}">
       <span class="dot"><img src="{{ url_for('logo') }}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:7px"></span>
       {{ org_name }} <span style="opacity:.75;font-weight:600">Help&nbsp;Desk</span>
     </a>
-    {% if current_user %}
-    <nav class="main">
-      {% set ep = request.endpoint %}
-      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if ep=='dashboard' }}">Dashboard</a>
-      <a href="{{ url_for('tickets') }}" class="{{ 'active' if ep in ['tickets','ticket_detail','ticket_new'] }}">Tickets</a>
-      <a href="{{ url_for('board') }}" class="{{ 'active' if ep=='board' }}">Board</a>
-      <a href="{{ url_for('assets') }}" class="{{ 'active' if ep=='assets' }}">Assets</a>
-      <a href="{{ url_for('changes') }}" class="{{ 'active' if ep=='changes' }}">Changes</a>
-      {% if current_user['role']=='admin' %}
-      <a href="{{ url_for('team') }}" class="{{ 'active' if ep=='team' }}">Team</a>
-      <a href="{{ url_for('settings') }}" class="{{ 'active' if ep=='settings' }}">Settings</a>
-      {% endif %}
-      <a href="{{ url_for('logout') }}">Log out</a>
-    </nav>
-    {% else %}
     <nav class="main">
       <a href="{{ url_for('track') }}" class="{{ 'active' if request.endpoint=='track' }}">Track a request</a>
       <a href="{{ url_for('login') }}" class="{{ 'active' if request.endpoint=='login' }}">Staff login</a>
     </nav>
-    {% endif %}
   </div>
 </header>
-<main>
+<main class="pub-main">
   <div class="wrap">
     {% with msgs = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
     {% endwith %}
-    {% block body %}{% endblock %}
+    {% block body_public %}{{ self.body() }}{% endblock %}
   </div>
 </main>
-<footer>{{ org_name }} Help Desk · powered by ChurchDesk · installable on any device</footer>
+<footer>{{ org_name }} Help Desk · installable on any device</footer>
+{% endif %}
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>
