@@ -6,15 +6,16 @@
   <meta name="theme-color" content="#7c3aed">
   <title>{% block title %}{{ org_name }} Help Desk{% endblock %}</title>
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon.svg') }}">
+  <link rel="icon" href="{{ url_for('logo') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('logo') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
 <header class="top">
   <div class="wrap">
     <a class="brand" href="{{ url_for('home') }}">
-      <span class="dot">🎧</span> {{ org_name }} <span style="opacity:.75;font-weight:600">Help&nbsp;Desk</span>
+      <span class="dot"><img src="{{ url_for('logo') }}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:7px"></span>
+      {{ org_name }} <span style="opacity:.75;font-weight:600">Help&nbsp;Desk</span>
     </a>
     {% if current_user %}
     <nav class="main">

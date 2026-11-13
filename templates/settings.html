@@ -4,9 +4,25 @@
 <div class="card" style="max-width:560px;margin:0 auto">
   <h1>Settings</h1>
   <p class="sub">Make it yours.</p>
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     <label>Church / organisation name</label>
     <input name="org_name" value="{{ org_name }}" required>
+
+    <label>Logo</label>
+    <div class="row" style="gap:14px;align-items:center">
+      <span class="dot" style="width:48px;height:48px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;overflow:hidden">
+        <img src="{{ url_for('logo') }}" alt="current logo" style="width:100%;height:100%;object-fit:contain">
+      </span>
+      <div style="flex:1">
+        <input type="file" name="logo" accept=".png,.jpg,.jpeg,.svg,.webp,.gif">
+        <p class="small muted" style="margin:6px 0 0">PNG, JPG, SVG, WebP or GIF · max 1 MB. Used in the header, tab icon and installed app.</p>
+        {% if has_logo %}
+        <label class="chip" style="display:inline-flex;gap:6px;align-items:center;margin-top:8px">
+          <input type="checkbox" name="remove_logo" value="1" style="width:auto"> Remove logo (back to default)
+        </label>
+        {% endif %}
+      </div>
+    </div>
 
     <label>Colour theme</label>
     <select name="theme">

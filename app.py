@@ -19,6 +19,9 @@ import email_util
 from db import (ASSET_CATEGORIES, ASSET_STATUSES, CATEGORIES, CHANGE_STATUSES,
                 OPEN_STATUSES, PRIORITIES, RISK_LEVELS, TICKET_STATUSES)
 
+LOGO_MIMES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+              ".svg": "image/svg+xml", ".webp": "image/webp", ".gif": "image/gif"}
+
 
 def create_app():
     app = Flask(__name__)
@@ -26,6 +29,7 @@ def create_app():
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("DATABASE_URL_SECURE"))
+    app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2 MB upload cap (logo)
 
     # Outbound email (auto-confirmation to requesters). All optional: if
     # SMTP_HOST is unset the app runs in "no email" mode and simply skips it.
@@ -493,11 +497,45 @@ def create_app():
             if pw:
                 g.db.execute("UPDATE users SET password_hash=? WHERE id=?",
                              (generate_password_hash(pw), current_user()["id"]))
+            # Optional: upload a logo (stored in the DB, served at /logo).
+            if request.form.get("remove_logo"):
+                db.set_setting(g.db, "logo_data", "")
+                db.set_setting(g.db, "logo_mime", "")
+            else:
+                f = request.files.get("logo")
+                if f and f.filename:
+                    import base64
+                    mime = LOGO_MIMES.get(os.path.splitext(f.filename)[1].lower())
+                    data = f.read()
+                    if not mime:
+                        flash("Logo must be a PNG, JPG, SVG, WebP or GIF.", "error")
+                        return redirect(url_for("settings"))
+                    if len(data) > 1_000_000:
+                        flash("Logo is too big (max 1 MB).", "error")
+                        return redirect(url_for("settings"))
+                    db.set_setting(g.db, "logo_data",
+                                   base64.b64encode(data).decode("ascii"))
+                    db.set_setting(g.db, "logo_mime", mime)
             g.db.commit()
             flash("Settings saved.", "success")
             return redirect(url_for("settings"))
         themes = ["violet", "ocean", "sunrise", "forest", "rose"]
-        return render_template("settings.html", themes=themes)
+        has_logo = bool(db.get_setting(g.db, "logo_data"))
+        return render_template("settings.html", themes=themes, has_logo=has_logo)
+
+    @app.route("/logo")
+    def logo():
+        """Serve the uploaded logo from the DB, or the bundled default icon."""
+        from flask import Response
+        data = db.get_setting(g.db, "logo_data")
+        mime = db.get_setting(g.db, "logo_mime")
+        if data and mime:
+            import base64
+            resp = Response(base64.b64decode(data), mimetype=mime)
+            resp.headers["Cache-Control"] = "no-cache"
+            return resp
+        return send_from_directory(app.static_folder, "icon.svg",
+                                   mimetype="image/svg+xml")
 
     # ===================================================================
     # PWA plumbing
@@ -518,8 +556,9 @@ def create_app():
             "start_url": "/", "scope": "/", "display": "standalone",
             "background_color": "#0f172a", "theme_color": "#7c3aed",
             "description": "IT service management & help desk",
-            "icons": [{"src": url_for("static", filename="icon.svg"),
-                       "sizes": "any", "type": "image/svg+xml",
+            "icons": [{"src": url_for("logo"),
+                       "sizes": "any",
+                       "type": db.get_setting(g.db, "logo_mime") or "image/svg+xml",
                        "purpose": "any maskable"}],
         })
 

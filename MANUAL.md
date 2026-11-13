@@ -203,6 +203,10 @@ Make the app your own:
 
 - **Church / organisation name** — shown in the header, footer, the installed
   app name and the page titles.
+- **Logo** — upload your church's logo (PNG, JPG, SVG, WebP or GIF, up to 1 MB).
+  It replaces the default headset everywhere: the header, the browser tab icon
+  and the installed app icon. A small preview shows the current logo; tick
+  **Remove logo** to go back to the default.
 - **Colour theme** — five options (Violet, Ocean, Sunrise, Forest, Rose). The
   coloured dots preview each one. The choice re-themes the whole app instantly.
 - **Change your password** — set a new password for your own account. Leave

@@ -80,4 +80,18 @@ body = email_util.confirmation_body(
 ok("CD-1001" in body and "Mic dead" in body and "track?ref=CD-1001" in body,
    "confirmation body has ref, subject and track link")
 
+# Logo: default serves, upload via settings serves the uploaded bytes.
+ok(c.get("/logo").status_code == 200, "default logo serves")
+import io  # noqa: E402
+png = (b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+       b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00"
+       b"\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82")
+r = c.post("/settings", data={"org_name": "Grace", "theme": "violet",
+                              "logo": (io.BytesIO(png), "logo.png")},
+           content_type="multipart/form-data", follow_redirects=True)
+ok(r.status_code == 200, "logo upload accepted")
+r = c.get("/logo")
+ok(r.status_code == 200 and r.data == png and r.mimetype == "image/png",
+   "uploaded logo served from DB")
+
 print("\nAll smoke checks passed.")
