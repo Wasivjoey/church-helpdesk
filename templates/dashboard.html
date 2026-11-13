@@ -8,13 +8,13 @@
 
 <div class="grid cols-4">
   <a class="kpi c-blue" href="{{ url_for('tickets', status='open') }}">
-    <span class="mark">🎫</span><div><div class="n">{{ open_n }}</div><div class="l">Open tickets</div></div></a>
+    <span class="mark">{{ icon('ticket') }}</span><div><div class="n">{{ open_n }}</div><div class="l">Open tickets</div></div></a>
   <a class="kpi c-red" href="{{ url_for('tickets', status='open') }}">
-    <span class="mark">⏰</span><div><div class="n">{{ overdue }}</div><div class="l">Overdue (SLA)</div></div></a>
+    <span class="mark">{{ icon('clock') }}</span><div><div class="n">{{ overdue }}</div><div class="l">Overdue (SLA)</div></div></a>
   <a class="kpi c-amber" href="{{ url_for('tickets', status='open') }}">
-    <span class="mark">👤</span><div><div class="n">{{ unassigned }}</div><div class="l">Unassigned</div></div></a>
+    <span class="mark">{{ icon('user') }}</span><div><div class="n">{{ unassigned }}</div><div class="l">Unassigned</div></div></a>
   <a class="kpi c-green" href="{{ url_for('assets') }}">
-    <span class="mark">💻</span><div><div class="n">{{ assets_n }}</div><div class="l">Assets tracked</div></div></a>
+    <span class="mark">{{ icon('box') }}</span><div><div class="n">{{ assets_n }}</div><div class="l">Assets tracked</div></div></a>
 </div>
 
 <div class="grid cols-2 mt">

@@ -9,6 +9,10 @@
 {%- elif name=='cog' -%}<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
 {%- elif name=='logout' -%}<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>
 {%- elif name=='search' -%}<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+{%- elif name=='clock' -%}<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>
+{%- elif name=='user' -%}<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>
+{%- elif name=='alert' -%}<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>
+{%- elif name=='menu' -%}<path d="M3 6h18M3 12h18M3 18h18"/>
 {%- endif -%}
 </svg>
 {% endmacro %}
@@ -17,9 +21,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1f3a8a">
+  <meta name="theme-color" content="#1b2440">
   <title>{% block title %}{{ org_name }} Help Desk{% endblock %}</title>
   <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap">
   <link rel="icon" href="{{ url_for('logo') }}">
   <link rel="apple-touch-icon" href="{{ url_for('logo') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
@@ -62,7 +69,7 @@
 
 <div class="shell">
   <header class="topbar">
-    <button class="hamburger" onclick="document.body.classList.toggle('rail-open')" aria-label="Menu">☰</button>
+    <button class="hamburger" onclick="document.body.classList.toggle('rail-open')" aria-label="Menu">{{ icon('menu') }}</button>
     <form class="topsearch" method="get" action="{{ url_for('tickets') }}">
       {{ icon('search') }}
       <input name="q" placeholder="Search tickets by ref, subject or requester…">

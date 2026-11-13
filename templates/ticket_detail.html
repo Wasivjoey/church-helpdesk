@@ -19,7 +19,7 @@
       <p><span class="chip">{{ t['category'] }}</span>
          <span class="badge p-{{ t['priority'] }}">{{ t['priority'] }}</span>
          {% if t['status'] in ['New','Open','In Progress','On Hold'] and t['due_at']|overdue %}
-         <span class="overdue">⚠ Overdue</span>{% endif %}</p>
+         <span class="overdue">{{ icon('alert') }} Overdue</span>{% endif %}</p>
     </div>
 
     <div class="card mt">
