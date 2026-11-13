@@ -148,6 +148,26 @@ def sla_due(priority, created=None):
     ).isoformat()
 
 
+def create_ticket(conn, subject, description, name, email,
+                  category="Other", priority="Medium", status="New"):
+    """Insert a ticket and return (id, ref). Shared by the web form, the
+    staff "new ticket" screen and the email-ingest poller so the reference,
+    SLA target and timestamps are produced the same way everywhere."""
+    if priority not in PRIORITIES:
+        priority = "Medium"
+    if category not in CATEGORIES:
+        category = "Other"
+    ts = now_iso()
+    ref = next_ref(conn)
+    cur = conn.execute(
+        "INSERT INTO tickets(ref,subject,description,requester_name,requester_email,"
+        "category,priority,status,due_at,created_at,updated_at) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+        (ref, subject, description or "", name, email, category, priority, status,
+         sla_due(priority), ts, ts))
+    return cur.lastrowid, ref
+
+
 def init_db():
     conn = get_db()
     try:

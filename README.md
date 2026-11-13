@@ -14,6 +14,10 @@ Self-contained Flask + SQLite — no setup beyond `pip install`.
 - **Changes** — change requests with risk, approval status, and scheduling.
 - **Team** — admins add agents/admins and activate/deactivate accounts.
 - **Settings** — church name + 5 colour themes, pick without touching code.
+- **Email in** — email a mailbox to open a ticket (IMAP poll at
+  `/tasks/fetch-email`, called on a schedule).
+- **Email out** — new tickets auto-send the requester a confirmation with the
+  reference, details and a tracking link (SMTP).
 
 ## Run it
 ```bash
@@ -29,8 +33,15 @@ Settings. Demo tickets, assets and a change are seeded so it's usable at once.
 gunicorn 'app:create_app()' --bind 0.0.0.0:$PORT
 ```
 Env vars (all optional): `SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`,
-`ORG_NAME`, `DATABASE_PATH`. Serve over HTTPS so the PWA installs and the
-service worker registers.
+`ORG_NAME`, `DATABASE_PATH`, `PUBLIC_URL`. Serve over HTTPS so the PWA installs
+and the service worker registers.
+
+**Outbound email** (confirmation replies): `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `EMAIL_FROM_NAME`.
+
+**Inbound email** (email-to-ticket): `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`,
+`IMAP_PASSWORD`, `IMAP_FOLDER`, `INBOUND_SECRET`. Schedule a call to
+`/tasks/fetch-email?key=$INBOUND_SECRET` every few minutes. See `MANUAL.md` §10.
 
 ## Test
 ```bash

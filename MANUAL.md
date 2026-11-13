@@ -230,7 +230,58 @@ too.
 
 ---
 
-## 10. Tips for running it smoothly
+## 10. Email features
+
+ChurchDesk can take requests by email and automatically reply to new tickets.
+Both are optional and switch on once their settings are present.
+
+### 10.1 Submit a ticket by email
+Point ChurchDesk at a mailbox (for example `help@yourchurch.org`). Anyone who
+emails that address gets a ticket created automatically:
+
+- The email **subject** becomes the ticket summary.
+- The email **body** becomes the details.
+- The **sender's name and address** become the requester.
+- New email tickets start at **New**, Medium priority, category **Other** — the
+  team then triages them like any other ticket.
+
+How it works: the app polls the mailbox over IMAP at the `/tasks/fetch-email`
+address. Have a scheduler (a free cron job, Render Cron, etc.) call that address
+every few minutes. Each already-read message is skipped, so nothing is
+duplicated. Configure it with these environment variables:
+
+| Variable        | What it is                                           |
+|-----------------|------------------------------------------------------|
+| `IMAP_HOST`     | mail server, e.g. `imap.gmail.com`                   |
+| `IMAP_USER`     | the mailbox login                                    |
+| `IMAP_PASSWORD` | the mailbox password / app-password                  |
+| `IMAP_FOLDER`   | folder to read (default `INBOX`)                     |
+| `INBOUND_SECRET`| a secret you choose; the poll URL must include it    |
+
+Call it as `https://yourapp/tasks/fetch-email?key=YOUR_INBOUND_SECRET`.
+
+### 10.2 Automatic confirmation reply
+Whenever a ticket is created — from the web form, by staff, or by email — the
+requester is automatically emailed a confirmation containing the **reference
+number, summary, category, priority, status**, and a **link to track it**. This
+needs outbound email set up:
+
+| Variable         | What it is                                   |
+|------------------|----------------------------------------------|
+| `SMTP_HOST`      | mail server, e.g. `smtp.gmail.com`           |
+| `SMTP_PORT`      | usually `587` (default)                      |
+| `SMTP_USER`      | login for sending                            |
+| `SMTP_PASSWORD`  | password / app-password                      |
+| `SMTP_FROM`      | the "from" address shown to requesters       |
+| `EMAIL_FROM_NAME`| the sender name, e.g. "Grace Help Desk"      |
+| `PUBLIC_URL`     | your site's address, for the tracking link   |
+
+If outbound email isn't configured, ticket creation still works — the
+confirmation is simply skipped.
+
+---
+
+## 11. Tips for running it smoothly
 
 - Change the default admin password the first time you log in (Settings).
 - Give each real tech volunteer their own Agent account (Team) rather than

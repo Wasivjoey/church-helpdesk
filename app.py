@@ -15,6 +15,7 @@ from werkzeug.security import check_password_hash
 from db import hash_pw as generate_password_hash
 
 import db
+import email_util
 from db import (ASSET_CATEGORIES, ASSET_STATUSES, CATEGORIES, CHANGE_STATUSES,
                 OPEN_STATUSES, PRIORITIES, RISK_LEVELS, TICKET_STATUSES)
 
@@ -25,7 +26,48 @@ def create_app():
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("DATABASE_URL_SECURE"))
+
+    # Outbound email (auto-confirmation to requesters). All optional: if
+    # SMTP_HOST is unset the app runs in "no email" mode and simply skips it.
+    app.config["SMTP_HOST"] = os.environ.get("SMTP_HOST")
+    app.config["SMTP_PORT"] = int(os.environ.get("SMTP_PORT", "587"))
+    app.config["SMTP_USER"] = os.environ.get("SMTP_USER")
+    app.config["SMTP_PASSWORD"] = os.environ.get("SMTP_PASSWORD")
+    app.config["SMTP_FROM"] = os.environ.get(
+        "SMTP_FROM", os.environ.get("SMTP_USER") or "help@church.local")
+    app.config["SMTP_TLS"] = os.environ.get("SMTP_TLS", "1") != "0"
+    app.config["EMAIL_FROM_NAME"] = os.environ.get("EMAIL_FROM_NAME", "Help Desk")
+    app.config["EMAIL_ENABLED"] = bool(app.config["SMTP_HOST"])
+
+    # Inbound email-to-ticket. Point these at the mailbox you want requests
+    # sent to (e.g. an IMAP inbox for help@yourchurch.org). The /tasks/fetch-email
+    # endpoint, called on a schedule, polls it and creates a ticket per message.
+    app.config["IMAP_HOST"] = os.environ.get("IMAP_HOST")
+    app.config["IMAP_PORT"] = int(os.environ.get("IMAP_PORT", "993"))
+    app.config["IMAP_USER"] = os.environ.get("IMAP_USER")
+    app.config["IMAP_PASSWORD"] = os.environ.get("IMAP_PASSWORD")
+    app.config["IMAP_FOLDER"] = os.environ.get("IMAP_FOLDER", "INBOX")
+
+    # Shared secret guarding the inbox-poll endpoint (?key= or X-Cron-Key).
+    app.config["INBOUND_SECRET"] = os.environ.get("INBOUND_SECRET")
+    # Public base URL used to build "track your request" links in emails.
+    app.config["PUBLIC_URL"] = os.environ.get("PUBLIC_URL")
+
     db.init_db()
+
+    def mail_cfg():
+        """app.config plus the two per-request values the email module needs."""
+        cfg = dict(app.config)
+        cfg["ORG_NAME"] = db.get_setting(g.db, "org_name", "Our Church")
+        cfg["PUBLIC_URL"] = app.config.get("PUBLIC_URL") or request.url_root
+        return cfg
+
+    def _confirm(ticket_id):
+        """Email the requester the details of a just-created ticket."""
+        t = g.db.execute("SELECT * FROM tickets WHERE id=?", (ticket_id,)).fetchone()
+        if t and t["requester_email"]:
+            url = mail_cfg()["PUBLIC_URL"].rstrip("/") + "/track?ref=" + t["ref"]
+            email_util.send_ticket_confirmation(mail_cfg(), t, url)
 
     # ---- request-scoped db + current user -------------------------------
     @app.before_request
@@ -99,17 +141,11 @@ def create_app():
         if not (subject and name and email):
             flash("Please fill in your name, email and a short summary.", "error")
             return redirect(url_for("home"))
-        priority = f.get("priority") if f.get("priority") in PRIORITIES else "Medium"
-        category = f.get("category") if f.get("category") in CATEGORIES else "Other"
-        ts = db.now_iso()
-        ref = db.next_ref(g.db)
-        g.db.execute(
-            "INSERT INTO tickets(ref,subject,description,requester_name,requester_email,"
-            "category,priority,status,due_at,created_at,updated_at) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-            (ref, subject, (f.get("description") or "").strip(), name, email,
-             category, priority, "New", db.sla_due(priority), ts, ts))
+        tid, ref = db.create_ticket(
+            g.db, subject, (f.get("description") or "").strip(), name, email,
+            f.get("category"), f.get("priority"), "New")
         g.db.commit()
+        _confirm(tid)
         flash("Request submitted! Your reference is %s — keep it to track progress."
               % ref, "success")
         return redirect(url_for("track", ref=ref))
@@ -302,20 +338,13 @@ def create_app():
             if not subject:
                 flash("A subject is required.", "error")
                 return redirect(url_for("ticket_new"))
-            pri = f.get("priority") if f.get("priority") in PRIORITIES else "Medium"
-            cat = f.get("category") if f.get("category") in CATEGORIES else "Other"
-            ts = db.now_iso()
-            ref = db.next_ref(g.db)
-            g.db.execute(
-                "INSERT INTO tickets(ref,subject,description,requester_name,requester_email,"
-                "category,priority,status,due_at,created_at,updated_at) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-                (ref, subject, (f.get("description") or "").strip(),
-                 (f.get("requester_name") or "Walk-up").strip(),
-                 (f.get("requester_email") or "").strip(), cat, pri, "Open",
-                 db.sla_due(pri), ts, ts))
+            tid, ref = db.create_ticket(
+                g.db, subject, (f.get("description") or "").strip(),
+                (f.get("requester_name") or "Walk-up").strip(),
+                (f.get("requester_email") or "").strip(),
+                f.get("category"), f.get("priority"), "Open")
             g.db.commit()
-            tid = g.db.execute("SELECT id FROM tickets WHERE ref=?", (ref,)).fetchone()["id"]
+            _confirm(tid)
             return redirect(url_for("ticket_detail", tid=tid))
         return render_template("ticket_new.html")
 
@@ -493,6 +522,18 @@ def create_app():
                        "sizes": "any", "type": "image/svg+xml",
                        "purpose": "any maskable"}],
         })
+
+    @app.route("/tasks/fetch-email", methods=["GET", "POST"])
+    def fetch_email_task():
+        """Poll the IMAP inbox and create a ticket per new message. Call it on a
+        schedule (e.g. a cron job every few minutes), authenticated with
+        INBOUND_SECRET as ?key= or an X-Cron-Key header."""
+        secret = app.config.get("INBOUND_SECRET")
+        provided = request.args.get("key") or request.headers.get("X-Cron-Key")
+        if not secret or provided != secret:
+            abort(403)
+        created = email_util.fetch_inbox(mail_cfg())
+        return jsonify({"created": created})
 
     @app.route("/healthz")
     def healthz():

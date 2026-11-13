@@ -67,4 +67,17 @@ ok(b"Test change" in r.data, "change created")
 ok(c.get("/manifest.webmanifest").status_code == 200, "manifest serves")
 ok(c.get("/sw.js").status_code == 200, "service worker serves")
 
+# Inbox-poll endpoint refuses without the shared secret.
+ok(c.get("/tasks/fetch-email").status_code == 403, "fetch-email guarded")
+
+# Confirmation email is a safe no-op when SMTP isn't configured.
+import email_util  # noqa: E402
+ok(email_util.send_email({"EMAIL_ENABLED": False}, "x@y.z", "s", "b") is False,
+   "send_email no-op without SMTP config")
+body = email_util.confirmation_body(
+    {"ORG_NAME": "Grace"}, "CD-1001", "Mic dead", "Sound / AV", "High", "New",
+    "http://x/track?ref=CD-1001")
+ok("CD-1001" in body and "Mic dead" in body and "track?ref=CD-1001" in body,
+   "confirmation body has ref, subject and track link")
+
 print("\nAll smoke checks passed.")
